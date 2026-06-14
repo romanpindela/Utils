@@ -1,37 +1,73 @@
-$folders = @(
-    "C:\Users\rpindela\Downloads\Luty",
-    "C:\Users\rpindela\Downloads\Wrzesień",
-    "C:\Users\rpindela\Downloads\Styczeń",
-    "C:\Users\rpindela\Downloads\Sierpień",
-    "C:\Users\rpindela\Downloads\Październik",
-    "C:\Users\rpindela\Downloads\Marzec",
-    "C:\Users\rpindela\Downloads\Maj",
-    "C:\Users\rpindela\Downloads\Listopad",
-    "C:\Users\rpindela\Downloads\Lipiec",
-    "C:\Users\rpindela\Downloads\Kwiecień",
-    "C:\Users\rpindela\Downloads\Grudzień",
-    "C:\Users\rpindela\Downloads\Czerwiec"
+<#
+.SYNOPSIS
+Converts HEIC images to JPG and extracts the first frame of MP4 videos as a JPG.
+
+.DESCRIPTION
+A professional PowerShell script that uses FFmpeg to process directories.
+It finds all .heic and .mp4 files in the specified folders and generates corresponding .jpg files.
+
+.PARAMETER Folders
+An array of folder paths to process.
+
+.EXAMPLE
+.\jpg-from-heic-mp4.ps -Folders "C:\Downloads\January", "C:\Downloads\February"
+
+.EXAMPLE
+.\jpg-from-heic-mp4.ps -Help
+
+.NOTES
+Author: Roman Pindela
+Email: roman.pindela@gmail.com
+GitHub: https://github.com/romanpindela
+Version: 1.0.0
+#>
+
+param (
+    [Parameter(Mandatory=$false, Position=0, ValueFromPipeline=$true)]
+    [string[]]$Folders,
+
+    [Alias('h')]
+    [switch]$Help
 )
 
-foreach ($folder in $folders) {
+# Display help and exit if no parameters are provided or if -Help is used
+if ($Help -or -not $Folders) {
+    Get-Help $PSCommandPath -Detailed
+    exit
+}
 
-    Write-Host "`n==== Przetwarzam katalog: $folder ====" -ForegroundColor Yellow
+# Verify if FFmpeg is installed and accessible via system PATH
+if (-not (Get-Command "ffmpeg" -ErrorAction SilentlyContinue)) {
+    Write-Host "CRITICAL ERROR: FFmpeg is not installed or not in the system PATH." -ForegroundColor Red
+    Write-Host "Please install FFmpeg to use this script (e.g., run 'winget install ffmpeg')." -ForegroundColor Yellow
+    exit
+}
 
-    # --- MP4 → JPG (pierwsza klatka) ---
+foreach ($folder in $Folders) {
+    if (-not (Test-Path -Path $folder -PathType Container)) {
+        Write-Host "Error: Directory '$folder' does not exist. Skipping." -ForegroundColor Red
+        continue
+    }
+
+    Write-Host "`n==== Processing directory: $folder ====" -ForegroundColor Yellow
+
+    # --- MP4 -> JPG (First frame extraction) ---
     Get-ChildItem -Path $folder -Filter *.mp4 | ForEach-Object {
         $mp4 = $_.FullName
         $jpg = Join-Path $folder ($_.BaseName + ".jpg")
 
-        Write-Host "MP4 → JPG: $($_.Name)" -ForegroundColor Cyan
-        ffmpeg -i $mp4 -vframes 1 -q:v 2 $jpg
+        Write-Host "MP4 -> JPG: $($_.Name)" -ForegroundColor Cyan
+        # Added -y flag to automatically overwrite existing files and prevent script freezing
+        ffmpeg -y -i $mp4 -vframes 1 -q:v 2 $jpg 2>$null
     }
 
-    # --- HEIC → JPG ---
+    # --- HEIC -> JPG (Image conversion) ---
     Get-ChildItem -Path $folder -Filter *.heic | ForEach-Object {
         $heic = $_.FullName
         $jpg = Join-Path $folder ($_.BaseName + ".jpg")
 
-        Write-Host "HEIC → JPG: $($_.Name)" -ForegroundColor Green
-        ffmpeg -i $heic -q:v 2 $jpg
+        Write-Host "HEIC -> JPG: $($_.Name)" -ForegroundColor Green
+        # Added -y flag to automatically overwrite existing files and prevent script freezing
+        ffmpeg -y -i $heic -q:v 2 $jpg 2>$null
     }
 }
