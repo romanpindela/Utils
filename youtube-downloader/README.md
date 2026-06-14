@@ -50,3 +50,11 @@ The expected path should look like this:
 Once this is done, the script will automatically pick up the cookies and authenticate your download requests.
 
 *Note: Be careful with your `cookies.txt` file as it contains sensitive session data. Never commit it to a public GitHub repository.*
+
+## Execution View
+
+### Standard Run
+![Standard Run](assets/screenshot-standard-run.jpg)
+
+### Help Output (-Help)
+![Help Output](assets/screenshot-help.jpg)
