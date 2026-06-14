@@ -29,14 +29,15 @@ def check_js_runtime():
         print("\nAfter installation, RESTART your terminal and run this script again.")
         print("================================================================================\n")
 
-def download_videos(file_path):
+def download_videos(file_path, output_dir, resolution):
     check_js_runtime()
-    if not os.path.exists(file_path):
-        print(f"Error: File '{file_path}' does not exist.")
+    
+    if not os.path.isfile(file_path):
+        print(f"Error: The provided path '{file_path}' does not exist or is not a valid file.")
         return
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    cookie_path = os.path.join(current_dir, 'auth', 'cookies.txt')
+    cookie_path = os.path.abspath(os.path.join(current_dir, 'auth', 'cookies.txt'))
     
     if not os.path.exists(cookie_path):
         print("--------------------------------------------------------------------------------")
@@ -49,12 +50,20 @@ def download_videos(file_path):
         print("3. Create an 'auth' directory next to this script and save the file as 'cookies.txt'.")
         print("--------------------------------------------------------------------------------\n")
     
+    # Create output directory if it doesn't exist
+    if not os.path.exists(output_dir):
+        try:
+            os.makedirs(output_dir)
+        except Exception as e:
+            print(f"Error: Failed to create output directory '{output_dir}'. Details: {e}")
+            sys.exit(1)
+
     ydl_opts = {
-        # Downloads the best video (max 1080p) + best audio. 
-        # If 1080p is not available, it takes the best available.
-        'format': 'bestvideo[height<=1080]+bestaudio/best', 
+        # Dynamic resolution based on user input
+        # Defaults to best video under target resolution + best audio
+        'format': f'bestvideo[height<={resolution}]+bestaudio/best', 
         
-        'outtmpl': os.path.join(current_dir, '%(title)s.%(ext)s'),
+        'outtmpl': os.path.join(os.path.abspath(output_dir), '%(title)s.%(ext)s'),
         'cookiefile': cookie_path if os.path.exists(cookie_path) else None,
         'quiet': False,
         'no_warnings': False,
@@ -101,6 +110,10 @@ def download_videos(file_path):
         print(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
+    # Display help if no arguments are provided
+    if len(sys.argv) == 1:
+        sys.argv.append('-h')
+
     epilog_text = """
 Authentication (For Private & Age-Restricted Videos):
 If you need to download age-restricted, private, or premium videos, you must
@@ -124,7 +137,9 @@ Version: 1.0.0
     )
     
     parser.add_argument("file_path", help="Path to the text file containing video links (one link per line).")
+    parser.add_argument("-o", "--output-dir", default=os.path.dirname(os.path.abspath(__file__)), help="Directory where videos will be saved. Defaults to the script's directory.")
+    parser.add_argument("-r", "--resolution", default="1080", help="Maximum vertical resolution to download (e.g., 720, 1080, 1440, 2160). Defaults to 1080.")
     parser.add_argument("-v", "--version", action="version", version="YouTube Downloader v1.0.0 by Roman Pindela")
     
     args = parser.parse_args()
-    download_videos(args.file_path)
+    download_videos(args.file_path, args.output_dir, args.resolution)

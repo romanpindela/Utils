@@ -1,17 +1,31 @@
 # YouTube Downloader
 
-A Python script to batch download videos from YouTube (and other platforms supported by `yt-dlp`) up to 1080p resolution. It automatically processes lists of URLs, trimming unnecessary URL parameters, and sets dynamic referers for each domain.
+!Version
+
+A robust, professional Python script to batch download videos from YouTube (and other platforms supported by `yt-dlp`). 
+
+The script automatically processes lists of URLs, trims unnecessary URL parameters, sets dynamic referers for each domain, and automatically handles the installation of required libraries and JS runtime challenges (e.g., HTTP 403 Forbidden errors).
 
 ## Prerequisites
 
-- Python 3
-- `yt-dlp` library (`pip install yt-dlp`)
+- **Python 3.8+**
+- `yt-dlp` library (The script will attempt to install it automatically on the first run).
+- **Node.js** or **Deno** (Required to bypass YouTube's recent anti-bot mechanisms. The script will warn you if it is missing).
+
+## Author Information
+
+- **Author**: Roman Pindela
+- **Email**: roman.pindela@gmail.com
+- **GitHub**: https://github.com/romanpindela
+
+---
 
 ## Usage
 
-1. Create a text file containing the video links you want to download (one link per line).
-2. Run the script via the command line, providing the text file as an argument:
+Create a standard text file containing the video links you want to download (one link per line). Then, run the script via PowerShell or Command Prompt.
 
+### Basic Example
+Downloads videos up to 1080p to the current directory:
 ```bash
 python youtube-downloader.py link_list.txt
 ```
