@@ -1,0 +1,37 @@
+$folders = @(
+    "C:\Users\rpindela\Downloads\Luty",
+    "C:\Users\rpindela\Downloads\Wrzesień",
+    "C:\Users\rpindela\Downloads\Styczeń",
+    "C:\Users\rpindela\Downloads\Sierpień",
+    "C:\Users\rpindela\Downloads\Październik",
+    "C:\Users\rpindela\Downloads\Marzec",
+    "C:\Users\rpindela\Downloads\Maj",
+    "C:\Users\rpindela\Downloads\Listopad",
+    "C:\Users\rpindela\Downloads\Lipiec",
+    "C:\Users\rpindela\Downloads\Kwiecień",
+    "C:\Users\rpindela\Downloads\Grudzień",
+    "C:\Users\rpindela\Downloads\Czerwiec"
+)
+
+foreach ($folder in $folders) {
+
+    Write-Host "`n==== Przetwarzam katalog: $folder ====" -ForegroundColor Yellow
+
+    # --- MP4 → JPG (pierwsza klatka) ---
+    Get-ChildItem -Path $folder -Filter *.mp4 | ForEach-Object {
+        $mp4 = $_.FullName
+        $jpg = Join-Path $folder ($_.BaseName + ".jpg")
+
+        Write-Host "MP4 → JPG: $($_.Name)" -ForegroundColor Cyan
+        ffmpeg -i $mp4 -vframes 1 -q:v 2 $jpg
+    }
+
+    # --- HEIC → JPG ---
+    Get-ChildItem -Path $folder -Filter *.heic | ForEach-Object {
+        $heic = $_.FullName
+        $jpg = Join-Path $folder ($_.BaseName + ".jpg")
+
+        Write-Host "HEIC → JPG: $($_.Name)" -ForegroundColor Green
+        ffmpeg -i $heic -q:v 2 $jpg
+    }
+}
